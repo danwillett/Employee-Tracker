@@ -1,0 +1,23 @@
+{
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "This application helps companies view and manage their departments, roles, and employees.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danwillett/Employee-Tracker.git"
+  },
+  "author": "danwillett",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/danwillett/Employee-Tracker/issues"
+  },
+  "homepage": "https://github.com/danwillett/Employee-Tracker#readme",
+  "dependencies": {
+    "inquirer": "^8.2.4",
+    "mysql2": "^3.0.1"
+  }
+}
