@@ -1,4 +1,23 @@
 const inquirer = require('inquirer');
+const mysql = require('mysql2');
+const cTable = require('console.table')
+
+const db = mysql.createConnection(
+    {
+        host: '127.0.0.1',
+        // MySQL username,
+        user: 'root',
+        // MySQL password
+        password: 'Ham mock82!',
+        database: 'company_db'
+    },
+    console.log(`Connected to the company_db database.`)
+  );
+  
+//   // Query database
+//   db.query('SELECT * FROM students', function (err, results) {
+//     console.log(results);
+//   });
 
 inquirer
     .prompt([
@@ -14,6 +33,15 @@ inquirer
         switch(response.username) {
             case "view all departments":
                 console.log("view departments")
+                db.query('SELECT * FROM department', (err, results) => {
+                    if (err) {
+                        console.error(err)
+                    } else {
+                        let departmentTable = cTable.getTable(results)
+                        console.table(departmentTable)
+                    }            
+                })
+
             break;
             case "view all roles":
 
