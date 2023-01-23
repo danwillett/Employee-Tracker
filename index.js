@@ -44,9 +44,37 @@ inquirer
 
             break;
             case "view all roles":
+                console.log("view roles")
+                db.query(`SELECT * FROM roles`, (err, results) => {
+                    if (err) {
+                        console.error(err)
+                    } else {
+                        let roleTable = cTable.getTable(results)
+                        console.table(departmentTable)
+                    }            
+                })
 
             break;
             case "view all employees":
+                console.log("view employees")
+
+                let query = `SELECT employee.employee_id, employee.first_name, employee.last_name, role.title, role.salary, department.department_name, CONCAT(manager.first_name, ' ', manager.last_name) AS manager_name
+                FROM employee 
+                    JOIN role 
+                        ON role.id = employee.role_id
+                    JOIN department
+                        ON department.id = role.department_id
+                    LEFT JOIN employee as manager
+                        ON manager.manager_id = employee.employee_id;`
+
+                db.query(query, (err, results) => {
+                    if (err) {
+                        console.error(err)
+                    } else {
+                        let departmentTable = cTable.getTable(results)
+                        console.table(departmentTable)
+                    }            
+                })
                 
             break;
             case "add a department":
