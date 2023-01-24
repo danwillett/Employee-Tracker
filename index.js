@@ -12,18 +12,6 @@ const viewAllDepartments = () => {
     }            
 })}
 
-const db = mysql.createConnection(
-    {
-        host: '127.0.0.1',
-        // MySQL username,
-        user: 'root',
-        // MySQL password
-        password: 'Ham mock82!',
-        database: 'company_db'
-    },
-    console.log(`Connected to the company_db database.`)
-  );
-  
 const viewAllRoles = () => {
     db.query(`SELECT role.id, role.title, role.salary, department.department_name FROM role JOIN department ON department.id = role.department_id;`, (err, results) => {
         if (err) {
@@ -35,6 +23,40 @@ const viewAllRoles = () => {
     })
 }
 
+const viewAllEmployees = () => {
+    let query = `SELECT employee.employee_id, employee.first_name, employee.last_name, role.title, role.salary, department.department_name, CONCAT(manager.first_name, ' ', manager.last_name) AS manager_name
+                FROM employee 
+                    JOIN role 
+                        ON role.id = employee.role_id
+                    JOIN department
+                        ON department.id = role.department_id
+                    LEFT JOIN employee as manager
+                        ON employee.manager_id = manager.employee_id;`
+
+                db.query(query, (err, results) => {
+                    if (err) {
+                        console.error(err)
+                    } else {
+                        let departmentTable = cTable.getTable(results)
+                        console.table(departmentTable)
+                    }            
+                })
+}
+
+const db = mysql.createConnection(
+    {
+        host: '127.0.0.1',
+        // MySQL username,
+        user: 'root',
+        // MySQL password
+        password: 'Ham mock82!',
+        database: 'company_db'
+    },
+    console.log(`Connected to the company_db database.`)
+  );
+
+
+
 inquirer
     .prompt([
         {
@@ -44,7 +66,7 @@ inquirer
             choices: ["view all departments", "view all roles", "view all employees", "add a department", "add a role", "add an employee", "update an employee role"]
       
         }
-    ]).then((response) => {
+    ]).then(async (response) => {
 
         switch(response.username) {
             case "view all departments":
@@ -60,23 +82,7 @@ inquirer
             case "view all employees":
                 console.log("view employees")
 
-                let query = `SELECT employee.employee_id, employee.first_name, employee.last_name, role.title, role.salary, department.department_name, CONCAT(manager.first_name, ' ', manager.last_name) AS manager_name
-                FROM employee 
-                    JOIN role 
-                        ON role.id = employee.role_id
-                    JOIN department
-                        ON department.id = role.department_id
-                    LEFT JOIN employee as manager
-                        ON manager.manager_id = employee.employee_id;`
-
-                db.query(query, (err, results) => {
-                    if (err) {
-                        console.error(err)
-                    } else {
-                        let departmentTable = cTable.getTable(results)
-                        console.table(departmentTable)
-                    }            
-                })
+                viewAllEmployees()
                 
             break;
             case "add a department":
@@ -164,16 +170,31 @@ inquirer
 
             break;
             case "add an employee":
-                
-                db.query(`SELECT employee.employee_id, CONCAT(manager.first_name, ' ', manager.last_name) AS manager_name
-                FROM employee 
-                    JOIN employee as manager
-                        ON manager.manager_id = employee.employee_id;`, (err, result)=> {
+
+                let roleObj;
+                let titles = [];
+                db.query(`SELECT role.title, role.id
+                FROM role;`, (err, result)=> {
                     err ? console.log(err) :
-                    
                     console.log(result)
+                    roleObj = result;
                     
-                })
+                    for (let i = 0; i < result.length; i++) {
+                        titles.push(result[i].title);
+                    }    
+                });
+  
+                let employeeObj;
+                let names =[];
+                db.query(`SELECT employee.employee_id, CONCAT(employee.first_name, ' ', employee.last_name) AS name
+                FROM employee;`, (err, result)=> {
+                    err ? console.log(err) :
+                    console.log(result)
+                    employeeObj = result;
+                    for (let i = 0; i < result.length; i++) {
+                        names.push(result[i].name);
+                    }                       
+                });
 
                 inquirer
                     .prompt([
@@ -189,16 +210,48 @@ inquirer
                         },
                         {
                             name: 'role',
-                            type: 'input',
-                            message: 'What is the role?'                                            
+                            type: 'list',
+                            message: 'What is the role?',
+                            choices: titles                                           
                         },
                         {
                             name: 'manager',
                             type: 'list',
                             message: "Please select your employee's manager",
-                            // choices:                                             
+                            choices: names                                       
                         },
-                    ])
+                    ]).then((response) => {
+
+                        // find role id
+                        let roleId;
+                        for (let i = 0; i<roleObj.length; i++){
+                            if (roleObj[i].title == response.role){
+                                roleId = roleObj[i].id;
+                            }
+                        };
+
+                        // find manager id
+                        let managerId;
+
+                        for (let i = 0; i<employeeObj.length; i++){
+                            if (employeeObj[i].name == response.manager){
+                                managerId = employeeObj[i].employee_id;
+                            }
+                        };
+
+
+                        let add_employee = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${response.firstName}", "${response.lastName}", "${roleId}", "${managerId}")`;
+                        db.execute(add_employee, (err, results) =>
+                        {
+                            if (err) {
+                                console.error(err)
+                            } else {
+                                console.log("Added new role")
+                                viewAllEmployees()
+                            }
+                            
+                        });
+                    })
 
             break;
             case "update an employee role":
