@@ -104,15 +104,12 @@ const addRole = (departmentObj, departments) => {
             ]).then((response) => {
                 // match department name with id
                 let department_id;
-                console.log(`department Obj ${departmentObj.length}`)
 
                 for (let i = 0; i < departmentObj.length; i++) {
                     if (departmentObj[i].department_name == response.department) {
                         department_id = departmentObj[i].id;
                     }
                 };
-
-                console.log(department_id)
 
                 let add_department = `INSERT INTO role (title, salary, department_id) VALUES ("${response.title}", "${response.salary}", "${department_id}")`;
                 db.execute(add_department, async (err, results) => {
@@ -204,13 +201,10 @@ const updateEmployee = (roleObj, titles, employeeObj, names) => {
             ]).then((response) => {
                 let employeeId
                 for (let i = 0; i < employeeObj.length; i++) {
-                    console.log(employeeObj)
                     if (employeeObj[i].name == response.employee) {
-
                         employeeId = employeeObj[i].employee_id;
                     }
                 };
-                console.log(employeeId)
 
                 db.execute(`UPDATE employee SET role_id = "${getRoleId(roleObj, response)}" WHERE employee_id = ${employeeId}`, async (err, result) => {
                     if (err) {
@@ -226,7 +220,6 @@ const updateEmployee = (roleObj, titles, employeeObj, names) => {
     })
 }
 
-
 const getDepartments = () => {
     return new Promise((resolve, reject) => {
         // get list of departments
@@ -237,7 +230,6 @@ const getDepartments = () => {
                 console.log(err)
                 reject(err)
             } else {
-                console.log(result)
                 departmentObj = result;
 
                 for (let i = 0; i < result.length; i++) {
@@ -326,12 +318,10 @@ const returnMenu = () => {
 }
 
 const db = mysql.createConnection(
-    {
+    { 
         host: '127.0.0.1',
-        // MySQL username,
-        user: 'root',
-        // MySQL password
-        password: 'Ham mock82!',
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
         database: 'company_db'
     },
     console.log(`Connected to the company_db database.`)
