@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
-const cTable = require('console.table')
+const cTable = require('console.table');
+require('dotenv').config();
 
 // query to see all departments
 const viewAllDepartments = () => {
